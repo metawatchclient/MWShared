@@ -145,10 +145,9 @@ static MWMetaWatch *sharedWatch;
         NSLog(@"didget Voltage:%@ ", voltage);
     } else if (msgType == kMSG_TYPE_ACCELEROMETER_HOST) {
         self.logString = @"";
-        unsigned int k = 4;
         unsigned long value = 0;
         // get x, y, z values, 2 bytes each
-        for (int i = 4; i < 10 i++) {
+        for (int i = 4; i < 10; i++) {
             value = data[i+1];
             value <<= 8;
             value += (data[i] >> 4);

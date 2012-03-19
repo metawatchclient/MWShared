@@ -149,7 +149,7 @@ static MWMetaWatch *sharedWatch;
         // get x, y, z values, 2 bytes each
         for (int i = 4; i < 10; i++) {
             value = data[i+1];
-            value <<= 8;
+            value <<= 4;
             value += (data[i] >> 4);
             self.logString =  [self.logString stringByAppendingFormat:@"%lu ", value];
             i++;

@@ -120,11 +120,45 @@ static MWMetaWatch *sharedWatch;
     [[NSNotificationCenter defaultCenter]postNotificationName:MWKitDidCloseChannelNotification object:nil];
 }
 
--(void)connectionController:(MWConnectionController *)controller didReceiveData:(NSData *)data {
-    const char* dataBytes = [data bytes];
-    [self didReceiveData:dataBytes];
+-(void)connectionController:(MWConnectionController *)controller didReceiveData:(NSData *)dataObj {
+    const unsigned char* data = [dataObj bytes];
+    const unsigned char msgType = data[2];
+    NSLog(@"+++ didReceiveData: %02x length: %lu\n",data[2], [dataObj length]);
+    
+    if (msgType==kMSG_TYPE_GET_DEVICE_TYPE_RESPONSE) {
+        NSLog(@"+++ Get device type response");
+    } else if (msgType==kMSG_TYPE_GET_INFORMATION_TYPE_RESPONSE) {
+        NSLog(@"+++ Get info type response");
+    } else if (msgType==kMSG_TYPE_GET_RTC_RESPONSE) {
+        NSLog(@"+++ Get RTC response");
+    } else if (msgType==kMSG_TYPE_STATUS_CHANGE_EVENT) {
+        
+    } else if (msgType==kMSG_TYPE_BUTTON_EVENT_MESSAGE) {
+        self.logString = [self.logString stringByAppendingFormat:@"BUtton %@ pressed. \n",[NSNumber numberWithChar:data[4]]];
+        [[NSNotificationCenter defaultCenter]postNotificationName:MWKitDidReceivePuttonPress object:[NSNumber numberWithChar:data[4]]];
+    }else if (msgType==kMSG_TYPE_LOW_BATTERY_BT_OFF_MESSAGE) {
+        
+    }else if (msgType==kMSG_TYPE_LOW_BATTERY_WARNING_MESSAGE) {
+        
+    }else if (msgType==kMSG_TYPE_READ_BATTERY_VOLATRE_RESPONSE) {
+        NSNumber *voltage = [NSNumber numberWithChar:data[0]];
+        NSLog(@"didget Voltage:%@ ", voltage);
+    } else if (msgType == kMSG_TYPE_ACCELEROMETER_HOST) {
+        self.logString = @"";
+        unsigned long value = 0;
+        // get x, y, z values, 2 bytes each
+        for (int i = 4; i < 10; i++) {
+            value = data[i+1];
+            value <<= 4;
+            value += (data[i] >> 4);
+            self.logString =  [self.logString stringByAppendingFormat:@"%lu ", value];
+            i++;
+        }
+        NSLog(@"Accelerometer data: %@", self.logString);
+    }
+    
+    [[NSNotificationCenter defaultCenter]postNotificationName:MWKitDidReceiveData object:nil];
 }
-
 
 //-(void)didOpenChannel {
 //  
@@ -141,48 +175,6 @@ static MWMetaWatch *sharedWatch;
 //-(void)didCloseChannel {
 //
 //}
-
--(void)didReceiveData:(const char*)data {
-    
-    const char msgType = data[2];
-    
-    if (msgType==kMSG_TYPE_GET_DEVICE_TYPE_RESPONSE) {
-        
-    }else if (msgType==kMSG_TYPE_GET_INFORMATION_TYPE_RESPONSE) {
-        
-    }else if (msgType==kMSG_TYPE_GET_RTC_RESPONSE) {
-        
-    }else if (msgType==kMSG_TYPE_STATUS_CHANGE_EVENT) {
-        
-    }else if (msgType==kMSG_TYPE_BUTTON_EVENT_MESSAGE) {
-        self.logString = [self.logString stringByAppendingFormat:@"Button %@ pressed. \n",[NSNumber numberWithChar:data[4]]];
-        [[NSNotificationCenter defaultCenter]postNotificationName:MWKitDidReceivePuttonPress object:[NSNumber numberWithChar:data[4]]];
-    }else if (msgType==kMSG_TYPE_LOW_BATTERY_BT_OFF_MESSAGE) {
-        
-    }else if (msgType==kMSG_TYPE_LOW_BATTERY_WARNING_MESSAGE) {
-        
-    }else if (msgType==kMSG_TYPE_READ_BATTERY_VOLATRE_RESPONSE) {
-        NSNumber *voltage = [NSNumber numberWithChar:data[0]];
-        NSLog(@"didget Voltage:%@ ", voltage);
-    }
-    
-    int i =0;
-    for (i=0; i<(sizeof(data)/sizeof(unsigned char)); i++) {
-        NSLog(@"%02x",data[i]);
-        self.logString =  [self.logString stringByAppendingFormat:@"%02x ",data[i]];
-    }
-    self.logString = [self.logString stringByAppendingFormat:@"\n"];
-    [[NSNotificationCenter defaultCenter]postNotificationName:MWKitDidReceiveData object:nil];
-    
-
-}
-
-
-
-
-
-
-
 
 
 
@@ -282,6 +274,7 @@ static MWMetaWatch *sharedWatch;
 }
 
 -(void)writeIdleScreenWithData:(NSMutableDictionary*)dataDict {
+    [self setRTC];
     NSData *data =  [MWImageTools imageDataForHomeScreen:dataDict];
     [self writeImage:data forMode:kMODE_IDLE];
 }
@@ -328,7 +321,7 @@ static MWMetaWatch *sharedWatch;
     memset(data, 0,12);
     data[0]=row;
     memcpy((data+1), inputData, 12);
-    int i=0;  
+//    int i=0;  
 //    for ( i=0; i<13;i++) {
 //        //  NSLog(@"i:%i 0x%2x",i, data[i]);
 //    }    

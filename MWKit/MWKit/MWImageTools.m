@@ -495,6 +495,8 @@
         weatherIcon=[NSImage imageNamed:@"weather_rain.bmp"];
     }else if ([condition isEqualToString:@"Chance of Rain"]) {
         weatherIcon=[NSImage imageNamed:@"weather_rain.bmp"];
+    }else {
+        weatherIcon=[NSImage imageNamed:@"weather_sunny.bmp"];
     }
 
     
@@ -522,11 +524,7 @@
       [NSColor colorWithDeviceWhite:0.0 alpha:1.0],NSForegroundColorAttributeName,
       style, NSParagraphStyleAttributeName,
       [NSFont fontWithName:@"MetaWatch Large caps 8pt" size:8.0], NSFontAttributeName,nil]retain]; 
-    [@"°" drawAtPoint:CGPointMake(40, 53) withAttributes:dict];
-    
-    
-    
-    
+    [@"°" drawAtPoint:CGPointMake(40, 53) withAttributes:dict];    
     
     /*
      Draw the counters

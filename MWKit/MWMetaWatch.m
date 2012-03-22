@@ -123,7 +123,7 @@ static MWMetaWatch *sharedWatch;
 -(void)connectionController:(MWConnectionController *)controller didReceiveData:(NSData *)dataObj {
     const unsigned char* data = [dataObj bytes];
     const unsigned char msgType = data[2];
-    NSLog(@"+++ didReceiveData: %02x length: %lu\n",data[2], [dataObj length]);
+    // NSLog(@"+++ didReceiveData: %02x length: %lu\n",data[2], [dataObj length]);
     
     if (msgType==kMSG_TYPE_GET_DEVICE_TYPE_RESPONSE) {
         NSLog(@"+++ Get device type response");
@@ -147,14 +147,18 @@ static MWMetaWatch *sharedWatch;
         self.logString = @"";
         unsigned long value = 0;
         // get x, y, z values, 2 bytes each
-        for (int i = 4; i < 10; i++) {
+        unsigned char i = 4;
+        for (; i < 10; i++) {
             value = data[i+1];
             value <<= 4;
             value += (data[i] >> 4);
-            self.logString =  [self.logString stringByAppendingFormat:@"%lu ", value];
+            self.logString =  [self.logString stringByAppendingFormat:@"%04lu ", value];
             i++;
         }
-        NSLog(@"Accelerometer data: %@", self.logString);
+        self.logString =  [self.logString stringByAppendingFormat:@"INT_SRC2: %02x ", data[i]];
+        //self.logString =  [self.logString stringByAppendingFormat:@"INT_SRC2: %02x ", data[i+1]];
+        
+        NSLog(@"XYZ: %@", self.logString);
     }
     
     [[NSNotificationCenter defaultCenter]postNotificationName:MWKitDidReceiveData object:nil];

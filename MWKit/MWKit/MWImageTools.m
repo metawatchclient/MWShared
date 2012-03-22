@@ -497,7 +497,7 @@
         weatherIcon=[NSImage imageNamed:@"weather_rain.bmp"];
     }else {
         weatherIcon=[NSImage imageNamed:@"weather_sunny.bmp"];
-    }
+    } 
 
     
     [weatherIcon drawAtPoint:NSMakePoint(5, 42) fromRect:NSMakeRect(0, 0, 24, 24) operation:NSCompositeCopy fraction:1.0];
